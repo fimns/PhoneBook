@@ -1,0 +1,275 @@
+#pragma once
+#pragma warning (disable:4996)
+
+#include<stdio.h>
+#include<stdlib.h>
+#include<conio.h>
+#include<Windows.h>
+#include"korean.h"
+#include"list.h"
+#include"mouse.h"
+
+Mod mode = All;
+void Print_Main();
+void Print_Add();
+void Print_Del();
+void Print_Search();
+void Print_Imp();
+void Print_All();
+void Print_Group();
+void Gov(int a);
+void Read();
+
+BT Input = CreateButton("입력", 50, 1,'q');
+BT Del = CreateButton("삭제", 50, 4,'w');
+BT Sort = CreateButton("검색", 50, 7,'e');
+BT Imp = CreateButton("상세보기", 50, 10, 'r');
+BT Grp = CreateButton("그룹보기/전체보기", 50, 13, 't');
+FILE *fp = _wfopen(L"intput.txt", L"a+");
+
+void main(int argc, char **argv) {
+//	system("mode con cols=80 lwines=25");
+	_wsetlocale(LC_ALL, L"Korean");
+	Read();
+	Print_Main();
+	char temp;
+	while (1) {
+		temp = _getch();
+		if (temp == 'q') {
+			Print_Add();
+			Print_Main();
+		}
+		else if (temp == 'w') { //한글입력추가해야됨
+			Print_Del();
+			Print_Main();
+		}
+		else if (temp == 'e') {
+			Print_Search();
+			Print_Main();
+		}
+		else if (temp == 'r') {
+			Print_Imp();
+			Print_Main();
+		}
+		else if (temp == 't') {
+			if (mode == All) mode = Group;
+			else mode = All;
+			Print_Main();
+		}
+	}
+}
+
+void Print_Main() {
+	system("cls"); gotoxy(0, 0);	
+	printf("전화번호부");
+	if (mode == All) {
+		printf("  // 보기모드 : 전체보기\n");
+		Print_All();
+	}
+	else {
+		printf("  //  보기모드 : 그룹보기\n");
+		Print_Group();
+	}
+	int page = s.last / 15;
+	
+	PrtButton(Input);
+	PrtButton(Del);
+	PrtButton(Sort);
+	PrtButton(Imp);
+	PrtButton(Grp);
+}
+void Print_Add() {
+	gotoxy(0, 0); system("cls");
+	int i;
+	char temp; int d, e;
+	wchar_t a[100], b[100], c[100];
+
+	printf("이름 : "); wscanf(L"%s", &a);
+	printf("전화번호 : "); wscanf(L"%s", &b);
+	printf("메모 : "); wscanf(L"%s", &c);
+	printf("그룹 : 1. 친구 2. 회사 3. 가족 4. 미지정\n");
+	while (1) {
+		temp = _getch();
+		if (temp == '1') {
+			d = Friend; break;
+		}
+		else if (temp == '2') {
+			d = Company; break;
+		}
+		else if (temp == '3') {
+			d = Family; break;
+		}
+		else if (temp == '4') {
+			d = None; break;
+		}
+	}
+	printf("즐겨찾기에 추가하겠습니까? 1. Yes 2. No\n");
+	//fwprintf(fp, L"%s %s %s\n", L"dfa", b, c);
+	while (1) {
+		temp = getch();
+		if (temp == '1') {
+			e = 1;
+			break;
+		}
+		else if (temp == '2') {
+			e = 0;
+			break;
+		}
+	}
+	s.add(a, b, c, d, e);
+}
+void Print_Del() {
+	int temp;
+	char temp2;
+	gotoxy(0, 0); printf("지울 번호 입력 : "); scanf("%d", &temp);
+	gotoxy(0, 0); printf("연락처를 삭제하시겠습니까?(1. Yes 2.No)");
+	while (1) {
+		temp2 = getch();
+		if (temp2 == '1') {
+			s.Del(temp);
+			return;
+		}
+		else if (temp2 == '2') return;
+	}
+}
+void Print_Search() {
+	wchar_t temp[100], temp1[100];
+	int i, j;
+	int chk = 0;
+	system("cls"); printf("검색어 입력 : ");
+	fflush(stdin);
+	wscanf(L"%s", &temp);
+	for (i = s.start; i <= s.last; i++) {
+		chk = 1;
+		if (wcscmp(s.data[i].name, temp) == 0 || wcscmp(s.data[i].number, temp) == 0) {
+			wprintf(L" %d %s %s %s \n", i, (s.data[i].name), (s.data[i].number), (s.data[i].memo));
+		}
+		for (j = 0; j < wcslen(temp); j++) {
+			if (kor[(s.data[i].name[j] - 0xAC00) / 28 / 21] != (temp[j])) {
+				chk = 0;
+			}
+		}
+		if (chk == 1) {
+			wprintf(L" %d %s %s %s \n", i, (s.data[i].name), (s.data[i].number), (s.data[i].memo));
+		}
+//		if (temp[0] == s.data[i].cho[0] &&)
+	}
+	printf("Press any key to continue");
+	_getch();
+}
+void Print_Imp() {
+	int temp;
+	gotoxy(0, 0); printf("확인할 번호 입력 :                     ");
+	gotoxy(19, 0);
+	scanf("%d", &temp);
+	if (s.start <= temp && temp <= s.last) {
+		Gov(temp);
+	}
+}
+
+void Gov(int a1) {
+	system("cls");
+	char temp;
+	wprintf(L"번호 : %d\n이름 : %s\n전화번호 : %s\n메모 : %s\n", a1, s.data[a1].name, s.data[a1].number, s.data[a1].memo);
+	wprintf(L"그룹 : %s\n즐겨찾기 : ", Group_String[s.data[a1].group_type]);
+	if (s.data[a1].favorite == 0) {
+		printf("미등록\n");
+	}
+	else printf("등록\n");
+	gotoxy(0, 0);  printf("수정하겠습니까?    1. Yes 2. No\n");
+	while (1) {
+		temp = _getch();
+		if (temp == '1') {
+			system("cls");
+			gotoxy(0, 0); printf("원본\n");
+			wprintf(L"번호 : %d\n이름 : %s\n전화번호 : %s\n메모 : %s\n", a1, s.data[a1].name, s.data[a1].number, s.data[a1].memo);
+			wprintf(L"그룹 : %s\n즐겨찾기 : ", Group_String[s.data[a1].group_type]);
+			if (s.data[a1].favorite == 0) {
+				printf("미등록\n");
+			}
+			else printf("등록\n\n");
+			printf("수정\n"); int d, e;
+			wchar_t a[100], b[100], c[100];
+
+			printf("이름 : "); wscanf(L"%s", &a);
+			printf("전화번호 : "); wscanf(L"%s", &b);
+			printf("메모 : "); wscanf(L"%s", &c);
+			printf("그룹 : 1. 친구 2. 회사 3. 가족 4. 미지정\n");
+			while (1) {
+				temp = _getch();
+				if (temp == '1') {
+					d = Friend; break;
+				}
+				else if (temp == '2') {
+					d = Company; break;
+				}
+				else if (temp == '3') {
+					d = Family; break;
+				}
+				else if (temp == '4') {
+					d = None; break;
+				}
+			}
+			printf("즐겨찾기에 추가하겠습니까? 1. Yes 2. No\n");
+			//fwprintf(fp, L"%s %s %s\n", L"dfa", b, c);
+			while (1) {
+				temp = getch();
+				if (temp == '1') {
+					e = 1;
+					break;
+				}
+				else if (temp == '2') {
+					e = 0;
+					break;
+				}
+			}
+			s.change(a, b, c, d, e, a1);
+		}
+		else if (temp == '2') break;
+	}
+}
+
+void Print_All() {
+	for (int j = s.start; j <= s.last; j++) {
+		wprintf(L" %d %s %s %s \n", j, (s.data[j].name), (s.data[j].number), (s.data[j].memo));
+	}
+}
+void Print_Group() {
+	int i;
+	printf("그룹 : 친구\n");
+	for (i = s.start; i <= s.last; i++) {
+		if (s.data[i].group_type == Friend) {
+			wprintf(L" %d %s %s %s \n", i, (s.data[i].name), (s.data[i].number), (s.data[i].memo));
+		}
+	}
+	printf("그룹 : 회사\n");
+	for (i = s.start; i <= s.last; i++) {
+		if (s.data[i].group_type == Company) {
+			wprintf(L" %d %s %s %s \n", i, (s.data[i].name), (s.data[i].number), (s.data[i].memo));
+		}
+	}
+	printf("그룹 : 가족\n");
+	for (i = s.start; i <= s.last; i++) {
+		if (s.data[i].group_type == Family) {
+			wprintf(L" %d %s %s %s \n", i, (s.data[i].name), (s.data[i].number), (s.data[i].memo));
+		}
+	}
+	printf("그룹 : 미지정\n");
+	for (i = s.start; i <= s.last; i++) {
+		if (s.data[i].group_type == None) {
+			wprintf(L" %d %s %s %s \n", i, (s.data[i].name), (s.data[i].number), (s.data[i].memo));
+		}
+	}
+}
+
+void Read() {
+	int n;
+	wchar_t a1[100], a2[100], a3[100];
+	fscanf(fp, "%d\n", &n);
+	for (int i = 1; i <= n; i++) {
+		fwscanf(fp, L"%s", &a1);
+		fwscanf(fp, L"%s", &a2);
+		fwscanf(fp, L"%s\n", &a3);
+	}
+	fclose(fp);
+}

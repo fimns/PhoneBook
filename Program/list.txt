@@ -1,0 +1,72 @@
+#pragma once
+#include<stdlib.h>
+
+#define string wchar_t *
+
+enum Group {N, Friend, Company, Family, None};
+wchar_t *Group_String[100] = { L"",L"친구", L"회사", L"가족", L"미지정" };
+typedef struct Prof {
+	wchar_t name[100];
+	wchar_t number[100];
+	wchar_t memo[100];
+//	char *cho[100];
+	int group_type;
+	int favorite;
+	int order;
+	int sort[10];
+}Prof;
+
+class List{ // 상황봐서 struct로 수정
+public :
+	Prof data[1001];
+	int start, last;
+	List();
+	void change(string name, string number, string memo, int type, int fav, int ord);
+	void Print();
+	void add(string name, string number, string memo, int type, int fav);
+	void Del( int num );
+};
+List s;
+void List::Del(int num) {
+	int i;
+	for (i = num; i < s.last; i++) {
+		data[i] = data[i + 1];
+	}
+	data[s.last--] = data[0];
+}
+List::List() {
+	start = 1;
+	last = 0;
+}
+void List::Print() {
+	printf("%s %s %s %d %d %d\n", data[start].name, 2, 3, 4, 5, 6);
+}
+void List::add(string name, string number, string memo, int type, int fav) {
+	Prof temp;
+	last++;
+	wcscpy(temp.name, name);
+	wcscpy(temp.number, number);
+	wcscpy(temp.memo, memo); 
+	temp.group_type = type;
+	temp.favorite = fav;
+	temp.order = last;
+/*	for (int i = 0; i < wcslen(name); i++) {
+		temp.cho[i] = kor[(name[i] - 가) / 28 / 21];
+	}
+	temp->sort = hsh;*/
+	data[last] = temp;
+}
+void List::change(string name, string number, string memo, int type, int fav, int ord) {
+	Prof temp;
+	wcscpy(temp.name, name);
+	wcscpy(temp.number, number);
+	wcscpy(temp.memo, memo);
+	temp.group_type = type;
+	temp.favorite = fav;
+	temp.order = ord;
+	data[ord] = temp;
+
+}
+void sort( int x ) {
+
+}
